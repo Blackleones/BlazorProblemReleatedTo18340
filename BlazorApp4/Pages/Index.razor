@@ -1,0 +1,27 @@
+﻿@page "/"
+@inherits OwningComponentBase<UserManager<IdentityUser>>
+<h1>Hello, world!</h1>
+
+number of users: @Users.Count()
+<button @onclick="@(async () => await Add())">click me. I work if you use Sqlite</button>
+
+<ul>
+@foreach(var user in Users) 
+{
+    <li>@user.UserName</li>
+}
+</ul>
+
+@code {
+    IQueryable<IdentityUser> Users;
+
+    protected override void OnInitialized()
+    {
+        Users = Service.Users;
+    }
+
+    public async Task Add()
+    {
+        await Service.CreateAsync(new IdentityUser { UserName = $"test_{Guid.NewGuid().ToString()}" });
+    }
+}
