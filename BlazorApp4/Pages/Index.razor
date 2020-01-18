@@ -2,26 +2,53 @@
 @inherits OwningComponentBase<UserManager<IdentityUser>>
 <h1>Hello, world!</h1>
 
-number of users: @Users.Count()
-<button @onclick="@(async () => await Add())">click me. I work if you use Sqlite</button>
+<p>in memory number of users: @UsersMaterialized.Count()</p>
+<p>total number of users: @count</p>
+<button @onclick="Add">click me. I work if you use Sqlite</button>
 
+<button @onclick="Sort">Sort by name</button>
 <ul>
-@foreach(var user in Users) 
-{
-    <li>@user.UserName</li>
-}
+    @foreach (var user in UsersMaterialized)
+    {
+        <li>@user.UserName</li>
+    }
 </ul>
 
 @code {
-    IQueryable<IdentityUser> Users;
+    List<IdentityUser> UsersMaterialized = new List<IdentityUser>();
+    int pageSize = 10;
+    int count = 0;
 
     protected override void OnInitialized()
     {
-        Users = Service.Users;
+        RecalculateTotal();
+        ExecuteQuery(Service.Users.Take(pageSize));
+    }
+
+    private void RecalculateTotal()
+    {
+        count = Service.Users.Count();
+    }
+
+    private void ExecuteQuery(IQueryable<IdentityUser> query)
+    {
+        UsersMaterialized = query.ToList();
     }
 
     public async Task Add()
     {
-        await Service.CreateAsync(new IdentityUser { UserName = $"test_{Guid.NewGuid().ToString()}" });
+        var user = new IdentityUser { UserName = $"test_{Guid.NewGuid().ToString()}" };
+        var result = await Service.CreateAsync(user);
+        if (result.Succeeded)
+        {
+            UsersMaterialized.Add(user);
+            RecalculateTotal();
+        }
+    }
+
+    public void Sort()
+    {
+        var query = Service.Users.OrderBy(x => x.UserName).Take(pageSize);
+        ExecuteQuery(query);
     }
 }
