@@ -32,7 +32,7 @@ namespace BlazorApp4
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer("Server=_MODIFY_;Database=_MODIFY_;user id=_MODIFY_;password=_MODIFY_"));
+                options.UseSqlServer(Configuration.GetValue<string>("ConnectionStrings:DefaultConnection")));
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddRazorPages();
